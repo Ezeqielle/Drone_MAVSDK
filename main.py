@@ -18,6 +18,10 @@ async def run():
             print(f"Firmware version: {info.firmware_version}")
             break
     
+    # Get the battery informations
+    async for battery in drone.telemetry.battery_info():
+        print(f"Battery: {battery.percentage}%")
+
     # Start calibrating
     print("-- Starting gyroscope calibration")
     async for progress_data in drone.calibration.calibrate_gyro():
@@ -59,7 +63,12 @@ async def run():
     await drone.action.takeoff()
     await asyncio.sleep(5)
     print("-- Taking off finished")
-    print("-- Dronne is flying")
+
+    # Is drone flying?
+    async for in_air_info in drone.telemetry.in_air_info():
+        if in_air_info.in_air:
+            print("-- Drone is flying")
+            break
 
     # Go to a point
     print("-- Going to a point")
@@ -69,6 +78,24 @@ async def run():
     # Landing
     print("-- Landing")
     await drone.action.land()
+
+    # Is drone landed?
+    async for in_air_info in drone.telemetry.in_air_info():
+        if not in_air_info.in_air:
+            print("-- Drone is landed")
+            break
+
+    # Last position point
+    print("-- Last position point")
+    async for gps_info in drone.telemetry.gps_info():
+        print(f"Latitude: {gps_info.latitude}")
+        print(f"Longitude: {gps_info.longitude}")
+        print(f"Altitude: {gps_info.altitude}")
+
+    # Disarming
+    print("-- Disarming")
+    await drone.action.disarm()
+    print("-- Disarmed")
     
 
 

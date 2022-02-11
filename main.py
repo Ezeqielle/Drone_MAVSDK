@@ -18,9 +18,19 @@ async def run():
             print(f"Firmware version: {info.firmware_version}")
             break
     
+    # Start task
+    asyncio.ensure_future(print_battery_info(drone))
+    asyncio.ensure_future(print_in_air(drone))
+    asyncio.ensure_future(print_gps_info(drone))
+
     # Get the battery informations
     async for battery in drone.telemetry.battery_info():
         print(f"Battery: {battery.percentage}%")
+        if battery.percentage < 20:
+            print("Battery is low, shutting down")
+            await drone.action.set_piloting_mode(piloting_mode="landing")
+            await drone.action.landing()
+            break
 
     # Start calibrating
     print("-- Starting gyroscope calibration")

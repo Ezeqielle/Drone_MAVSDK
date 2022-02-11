@@ -17,11 +17,6 @@ async def run():
             print(f"Drone discovered with UUID: {state.uuid}")
             print(f"Firmware version: {info.firmware_version}")
             break
-    
-    # Start task
-    asyncio.ensure_future(print_battery_info(drone))
-    asyncio.ensure_future(print_in_air(drone))
-    asyncio.ensure_future(print_gps_info(drone))
 
     # Get the battery informations
     async for battery in drone.telemetry.battery_info():
@@ -62,6 +57,13 @@ async def run():
                 print(progress_data)
             print("-- Home point calibration finished")
             break
+
+    # Calibrating home altitude
+    print("Fetching amsl altitude at home point")
+    async for terrain_info in drone.telemetry.home():
+        absolute_altitude = terrain_info.absolute_altitude_m
+        print(f"-- Home altitude: {terrain_info.altitude_amsl}")
+        break
     
     # Arming
     print("-- Arming")
